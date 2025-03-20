@@ -1,4 +1,4 @@
-function GameBoard() {
+const GameBoard = (function(){
     const row = 3;
     const col = 3;
     const arr = [];
@@ -15,17 +15,15 @@ function GameBoard() {
             }
         }
     }
-
     
     resetArr();
 
     return { getBoard, setBoard, resetArr};
-}
+})();
 
-function Game() {
+const Game =(function() {
     let playerTurn = true; //true for p1, false for p2
     let numOfTurns = 0;
-    const board = GameBoard();
 
     const getPlayerSymbol = () => playerTurnSymbol = playerTurn == true ? "X" : "O" //p1 will be X
 
@@ -37,58 +35,58 @@ function Game() {
 
         for (i = 0; i < 3; i++) {
             //check rows
-            if (board.getBoard(i, 0) === board.getBoard(i, 1) && board.getBoard(i, 0) === board.getBoard(i, 2) && board.getBoard(i, 1) === board.getBoard(i, 2)) return true;
+            if (GameBoard.getBoard(i, 0) === GameBoard.getBoard(i, 1) && GameBoard.getBoard(i, 0) === GameBoard.getBoard(i, 2) && GameBoard.getBoard(i, 1) === GameBoard.getBoard(i, 2)) return true;
 
             //check cols
-            if (board.getBoard(0, i) === board.getBoard(1, i) && board.getBoard(0, i) === board.getBoard(2, i) && board.getBoard(1, i) === board.getBoard(2, i)) return true;
+            if (GameBoard.getBoard(0, i) === GameBoard.getBoard(1, i) && GameBoard.getBoard(0, i) === GameBoard.getBoard(2, i) && GameBoard.getBoard(1, i) === GameBoard.getBoard(2, i)) return true;
         }
 
         //check top left diagonal to bottom right
-        if (board.getBoard(0, 0) === board.getBoard(1, 1) && board.getBoard(0, 0) === board.getBoard(2, 2) && board.getBoard(1, 1) === board.getBoard(2, 2)) return true;
+        if (GameBoard.getBoard(0, 0) === GameBoard.getBoard(1, 1) && GameBoard.getBoard(0, 0) === GameBoard.getBoard(2, 2) && GameBoard.getBoard(1, 1) === GameBoard.getBoard(2, 2)) return true;
 
         //check bot left diagonal to top right
-        if (board.getBoard(2, 0) === board.getBoard(1, 1) && board.getBoard(2, 0) === board.getBoard(0, 2) && board.getBoard(1, 1) === board.getBoard(0, 2)) return true;
+        if (GameBoard.getBoard(2, 0) === GameBoard.getBoard(1, 1) && GameBoard.getBoard(2, 0) === GameBoard.getBoard(0, 2) && GameBoard.getBoard(1, 1) === GameBoard.getBoard(0, 2)) return true;
     }
 
     const checkValidTurn = (row,col) =>{
-        return typeof(board.getBoard(row,col)) == "number"
+        return typeof(GameBoard.getBoard(row,col)) == "number"
     }
 
     const restartGame = () =>{
-        DisplayController().clearBoard();
-        board.resetArr();
+        DisplayController.clearBoard();
+        GameBoard.resetArr();
         numOfTurns = 0;
         playerTurn = true;
-        DisplayController().updatePlayerTurnText(getPlayerSymbol());
+        DisplayController.updatePlayerTurnText(getPlayerSymbol());
     }
 
     const playTurn = (row, col)=>{
         if(checkValidTurn(row,col))
         {
             numOfTurns++;
-            board.setBoard(row,col,getPlayerSymbol());
-            DisplayController().updateHTMLUI(row,col,getPlayerSymbol());
+            GameBoard.setBoard(row,col,getPlayerSymbol());
+            DisplayController.updateHTMLUI(row,col,getPlayerSymbol());
             if(checkWin()){
                 console.log(`${getPlayerSymbol()} WINS`);
-                DisplayController().handleEndGame("WIN",getPlayerSymbol());
+                DisplayController.handleEndGame("WIN",getPlayerSymbol());
             }
             if(numOfTurns >= 9){
                 console.log("DRAW");
-                DisplayController().handleEndGame("DRAW","");
+                DisplayController.handleEndGame("DRAW","");
             }
             updatePlayerTurn();
-            DisplayController().updatePlayerTurnText(getPlayerSymbol());
+            DisplayController.updatePlayerTurnText(getPlayerSymbol());
         }
         else{
-            DisplayController().logInvalidMove();
+            DisplayController.logInvalidMove();
         }
     }
 
     return {updatePlayerTurn, playTurn, restartGame};
-}
+})();
 
 
-function DisplayController() {
+const DisplayController = (function() {
     const cells = document.querySelectorAll(".cell");
     const resetBtn = document.getElementById("resetBoard")
     const playerTurnText = document.getElementById("playersTurnText");
@@ -96,18 +94,17 @@ function DisplayController() {
     const modal = document.getElementById("game-over-container");
     const endText = document.getElementById("endText");
     const restartGame = document.getElementById("restartEndBtn");
-    const game = Game();
 
 
     const start = () => {
         resetBtn.addEventListener("click", (e) => {
-            game.restartGame();
+            Game.restartGame();
         })
 
         cells.forEach(cell => {
             cell.addEventListener("click", (e) => {
                 logText.innerText = "";
-                game.playTurn(Number.parseInt(e.target.dataset.row), Number.parseInt(e.target.dataset.col));
+                Game.playTurn(Number.parseInt(e.target.dataset.row), Number.parseInt(e.target.dataset.col));
             })
         })
 
@@ -136,17 +133,19 @@ function DisplayController() {
 
         modal.showModal();
         endText.innerText = text;
+
+        restartGame.addEventListener("click", ()=>{
+            Game.restartGame();
+            modal.close();
+        })
+    
     }
 
-    restartGame.addEventListener("click", ()=>{
-        game.restartGame();
-        modal.close();
-    })
 
 
     return { start, updateHTMLUI, updatePlayerTurnText, logInvalidMove, handleEndGame, clearBoard};
-}
+})();
 
 
-DisplayController().start();
+DisplayController.start();
 
